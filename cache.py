@@ -33,7 +33,4 @@ class Cache(object):
         if key in self._dict: del self._dict[key]
 
     def clear(self):
-        return
-
-
-
+        self._dict.clear()
