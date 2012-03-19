@@ -130,6 +130,67 @@ class TestCache(TestCase):
         self.assertEqual(self.cache.get('recipe'), {'sugar': 2, 'wine': 5})
         self.assertEqual(self.cache.get('garbage'), 'full')
 
+    def test_cache_add_with_positive_timeout(self):
+        """
+        Adding item without timeout must be must be cached for the specified length of time (in seconds) only if
+        the item does not already exist.
+        """
+        self.cache.set('garbage', 'full', 10)
+
+        self.assertTrue(self.cache.add('superman', 'clark kent', 10))
+        self.assertTrue(self.cache.add('recipe', {'sugar': 2, 'wine': 5}, 20))
+        self.assertFalse(self.cache.add('garbage', 'empty', 20))
+
+        self.assertEqual(self.cache.get('superman'), 'clark kent')
+        self.assertEqual(self.cache.get('recipe'), {'sugar': 2, 'wine': 5})
+        self.assertEqual(self.cache.get('garbage'), 'full')
+
+        # Move time forward 10 seconds
+        cache.datetime.now = lambda: datetime.now() + timedelta(seconds=10)
+
+        self.assertTrue(self.cache.add('superman', 'not kent', 10))
+        self.assertFalse(self.cache.add('recipe', {'sugar': None, 'wine': 'A bottle'}, 10))
+        self.assertTrue(self.cache.add('garbage', 'empty', 10))
+
+        self.assertEqual(self.cache.get('superman'), 'not kent')
+        self.assertEqual(self.cache.get('recipe'), {'sugar': 2, 'wine': 5})
+        self.assertEqual(self.cache.get('garbage'), 'empty')
+
+        # Move time forward 10 years
+        cache.datetime.now = lambda: datetime.now() + timedelta(days=10*365)
+
+        self.assertEqual(self.cache.get('superman'), None)
+        self.assertEqual(self.cache.get('recipe'), None)
+        self.assertEqual(self.cache.get('garbage'), None)
+
+    def test_cache_add_with_negative_timeout(self):
+        """Adding item with zero or negative timeout must not be cached."""
+        self.cache.set('garbage', 'full')
+
+        self.assertFalse(self.cache.add('superman', 'clark kent', -10))
+        self.assertFalse(self.cache.add('recipe', {'sugar': 2, 'wine': 5}, -20))
+        self.assertFalse(self.cache.add('garbage', 'empty', -20))
+
+        self.assertEqual(self.cache.get('superman'), None)
+        self.assertEqual(self.cache.get('recipe'), None)
+        self.assertEqual(self.cache.get('garbage'), 'full')
+
+    def test_cache_delete(self):
+        """"""
+        self.cache.set('superman', 'clark kent')
+        self.cache.set('recipe', {'sugar': 2, 'wine': 5}, 10)
+        self.cache.set('secret', ['remains secret'], 0)
+
+        self.cache.delete('superman')
+        self.cache.delete('recipe')
+        self.cache.delete('secret')
+        self.cache.delete('ghost')
+
+        self.assertEqual(self.cache.get('superman'), None)
+        self.assertEqual(self.cache.get('recipe'), None)
+        self.assertEqual(self.cache.get('secret'), None)
+        self.assertEqual(self.cache.get('ghost'), None)
+
 
 if __name__ == '__main__':
     main()
