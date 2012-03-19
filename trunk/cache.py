@@ -7,9 +7,16 @@ class Cache(object):
         super(Cache, self).__init__()
         self._dict = {}
 
-    def set(self, key, value, timeout=None):
+    def _set(self, key, value, timeout=None):
+        if timeout is not None and timeout <= 0:
+            self.delete(key)
+            return False
         expires = datetime.now() + timedelta(seconds=timeout) if timeout is not None else None
         self._dict[key] = (value, expires)
+        return True
+
+    def set(self, key, value, timeout=None):
+        self._set(key, value, timeout)
 
     def get(self, key, default=None):
         value, expires = self._dict.get(key, (None, None))
@@ -20,11 +27,10 @@ class Cache(object):
     def add(self, key, value, timeout=None):
         if self.get(key) is not None:
             return False
-        self.set(key, value, timeout)
-        return True
+        return self._set(key, value, timeout)
 
     def delete(self, key):
-        return
+        if key in self._dict: del self._dict[key]
 
     def clear(self):
         return
