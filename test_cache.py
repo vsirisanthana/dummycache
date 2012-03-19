@@ -9,7 +9,7 @@ class TestCache(TestCase):
 
     def setUp(self):
         super(TestCache, self).setUp()
-        cache.datetime = DatetimeStub()
+        cache.datetime = DatetimeStub()     # Stub datetime to be able to mock datetime.now()
         self.cache = cache.Cache()
 
     def tearDown(self):
@@ -17,28 +17,93 @@ class TestCache(TestCase):
         cache.datetime = datetime
         super(TestCache, self).tearDown()
 
-    def test_cache_set(self):
-        self.cache.set('superman', 'clark kent', 1)
-        self.cache.set('recipe', {'sugar': 2, 'wine': 5}, 1)
+    def test_cache_set_with_positive_timeout(self):
+        """Item with positive timeout must be cached for the specified length of time (in seconds)"""
+        self.cache.set('superman', 'clark kent', 5)
+        self.cache.set('recipe', {'sugar': 2, 'wine': 5}, 10)
 
         self.assertEqual(self.cache.get('superman'), 'clark kent')
         self.assertEqual(self.cache.get('recipe'), {'sugar': 2, 'wine': 5})
-        self.assertEqual(self.cache.get('empty'), None)
 
-        # Move time forward 1 second
-        cache.datetime.now = lambda: datetime.now() + timedelta(seconds=1)
+        # Move time forward 5 seconds
+        cache.datetime.now = lambda: datetime.now() + timedelta(seconds=5)
+
+        self.assertEqual(self.cache.get('superman'), None)
+        self.assertEqual(self.cache.get('recipe'), {'sugar': 2, 'wine': 5})
+
+        # Move time forward 10 seconds
+        cache.datetime.now = lambda: datetime.now() + timedelta(seconds=10)
 
         self.assertEqual(self.cache.get('superman'), None)
         self.assertEqual(self.cache.get('recipe'), None)
-        self.assertEqual(self.cache.get('empty'), None)
 
-    def test_cache_add(self):
-        self.cache.add('superman', 'clark kent', 1)
-        self.cache.add('recipe', {'sugar': 2, 'wine': 5}, 1)
+    def test_cache_set_with_zero_or_negative_timeout(self):
+        """Item with zero or negative timeout must not be cached."""
+        self.cache.set('superman', 'clark kent', 0)
+        self.cache.set('recipe', {'sugar': 2, 'wine': 5}, -10)
+
+        self.assertEqual(self.cache.get('superman'), None)
+        self.assertEqual(self.cache.get('recipe'), None)
+
+        # Move time forward 5 seconds
+        cache.datetime.now = lambda: datetime.now() + timedelta(seconds=5)
+
+        self.assertEqual(self.cache.get('superman'), None)
+        self.assertEqual(self.cache.get('recipe'), None)
+
+    def test_cache_set_without_timeout(self):
+        """Item without timeout must be cached forever."""
+        self.cache.set('superman', 'clark kent')
+        self.cache.set('recipe', {'sugar': 2, 'wine': 5})
 
         self.assertEqual(self.cache.get('superman'), 'clark kent')
         self.assertEqual(self.cache.get('recipe'), {'sugar': 2, 'wine': 5})
-        self.assertEqual(self.cache.get('empty'), None)
+
+        # Move time forward 10 years
+        cache.datetime.now = lambda: datetime.now() + timedelta(days=10*365)
+
+        self.assertEqual(self.cache.get('superman'), 'clark kent')
+        self.assertEqual(self.cache.get('recipe'), {'sugar': 2, 'wine': 5})
+
+    def test_cache_get_non_existent_item(self):
+        """Getting non-existent item must not throw exception."""
+        self.assertEqual(self.cache.get('ghost'), None)
+        self.assertEqual(self.cache.get('ghost', 'never exists'), 'never exists')
+
+    def test_cache_get_with_default(self):
+        """Getting expired or non-existent item with default value must return the default value."""
+        self.cache.set('superman', 'clark kent', 5)
+        self.cache.set('recipe', {'sugar': 2, 'wine': 5}, 10)
+        self.cache.set('secret', ['remains secret'], 0)
+
+        self.assertEqual(self.cache.get('superman', 'default'), 'clark kent')
+        self.assertEqual(self.cache.get('recipe', {'default': True}), {'sugar': 2, 'wine': 5})
+        self.assertEqual(self.cache.get('secret', ['default']), ['default'])
+        self.assertEqual(self.cache.get('ghost', 0), 0)
+
+        # Move time forward 5 seconds
+        cache.datetime.now = lambda: datetime.now() + timedelta(seconds=5)
+
+        self.assertEqual(self.cache.get('superman', 'default'), 'default')
+        self.assertEqual(self.cache.get('recipe', {'default': True}), {'sugar': 2, 'wine': 5})
+        self.assertEqual(self.cache.get('secret', ['default']), ['default'])
+        self.assertEqual(self.cache.get('ghost', 0), 0)
+
+        # Move time forward 10 seconds
+        cache.datetime.now = lambda: datetime.now() + timedelta(seconds=10)
+
+        self.assertEqual(self.cache.get('superman', 'default'), 'default')
+        self.assertEqual(self.cache.get('recipe', {'default': True}), {'default': True})
+        self.assertEqual(self.cache.get('secret', ['default']), ['default'])
+        self.assertEqual(self.cache.get('ghost', 0), 0)
+
+#    def test_cache_add(self):
+#        self.cache.add('superman', 'clark kent', 1)
+#        self.cache.add('recipe', {'sugar': 2, 'wine': 5}, 1)
+#
+#        self.assertEqual(self.cache.get('superman'), 'clark kent')
+#        self.assertEqual(self.cache.get('recipe'), {'sugar': 2, 'wine': 5})
+#        self.assertEqual(self.cache.get('empty'), None)
 
 
 if __name__ == '__main__':
