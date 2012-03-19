@@ -13,7 +13,5 @@ to use dummycache simply just do:
 ====================
        USAGE
 ====================
-1. from dummycache import Cache
+1. from dummycache.cache import Cache
 2. cache = Cache()
-
-

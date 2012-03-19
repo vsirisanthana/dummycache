@@ -7,7 +7,7 @@ def read(fname):
 
 setup(
     name = "dummycache",
-    version = "0.0.2",
+    version = "0.0.1",
     author = "The Sirisanthana Team",
     author_email = "vsirisanthana@gmail.com",
     description = ("A dummy in-memory cache for development and testing (never use in production)."),
