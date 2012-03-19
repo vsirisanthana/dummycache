@@ -8,11 +8,12 @@ class Cache(object):
         self._dict = {}
 
     def set(self, key, value, timeout=None):
-        self._dict[key] = (value, datetime.now() + timedelta(seconds=timeout))
+        expires = datetime.now() + timedelta(seconds=timeout) if timeout is not None else None
+        self._dict[key] = (value, expires)
 
     def get(self, key, default=None):
         value, expires = self._dict.get(key, (None, None))
-        if value is None or datetime.now() >= expires:
+        if value is None or (expires is not None and datetime.now() >= expires):
             return default
         return value
 
