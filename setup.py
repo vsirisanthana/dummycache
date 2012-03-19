@@ -21,6 +21,6 @@ setup(
         "Topic :: Software Development :: Libraries :: Python Modules",
         "License :: OSI Approved :: GNU General Public License (GPL)"
     ],
-    packages = [],
+    packages = ['dummycache'],
     install_requires = [],
 )
