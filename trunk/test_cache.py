@@ -176,7 +176,7 @@ class TestCache(TestCase):
         self.assertEqual(self.cache.get('garbage'), 'full')
 
     def test_cache_delete(self):
-        """"""
+        """Deleting item must remove the item from cache."""
         self.cache.set('superman', 'clark kent')
         self.cache.set('recipe', {'sugar': 2, 'wine': 5}, 10)
         self.cache.set('secret', ['remains secret'], 0)
@@ -185,6 +185,19 @@ class TestCache(TestCase):
         self.cache.delete('recipe')
         self.cache.delete('secret')
         self.cache.delete('ghost')
+
+        self.assertEqual(self.cache.get('superman'), None)
+        self.assertEqual(self.cache.get('recipe'), None)
+        self.assertEqual(self.cache.get('secret'), None)
+        self.assertEqual(self.cache.get('ghost'), None)
+
+    def test_cache_clear(self):
+        """Clearing cache must empty the cache."""
+        self.cache.set('superman', 'clark kent')
+        self.cache.set('recipe', {'sugar': 2, 'wine': 5}, 10)
+        self.cache.set('secret', ['remains secret'], 0)
+
+        self.cache.clear()
 
         self.assertEqual(self.cache.get('superman'), None)
         self.assertEqual(self.cache.get('recipe'), None)
