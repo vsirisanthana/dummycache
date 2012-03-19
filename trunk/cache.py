@@ -17,8 +17,11 @@ class Cache(object):
             return default
         return value
 
-    def add(self, key, value, timeout):
-        return
+    def add(self, key, value, timeout=None):
+        if self.get(key) is not None:
+            return False
+        self.set(key, value, timeout)
+        return True
 
     def delete(self, key):
         return
