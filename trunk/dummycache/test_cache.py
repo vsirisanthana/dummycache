@@ -1,8 +1,8 @@
 from datetime import datetime, timedelta
-from unittest import TestCase, main
+from unittest import TestCase
 
-import cache
-from datetimestub import DatetimeStub
+from . import cache
+from .datetimestub import DatetimeStub
 
 
 class TestCache(TestCase):
@@ -203,7 +203,3 @@ class TestCache(TestCase):
         self.assertEqual(self.cache.get('recipe'), None)
         self.assertEqual(self.cache.get('secret'), None)
         self.assertEqual(self.cache.get('ghost'), None)
-
-
-if __name__ == '__main__':
-    main()
