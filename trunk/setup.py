@@ -1,5 +1,4 @@
 import os
-
 from setuptools import setup
 
 def read(fname):
@@ -7,13 +6,13 @@ def read(fname):
 
 setup(
     name = "dummycache",
-    version = "0.0.1",
-    author = "The Sirisanthana Team",
+    version = "0.0.2",
+    author = "Vichaya Sirisanthana",
     author_email = "vsirisanthana@gmail.com",
-    description = ("A dummy in-memory cache for development and testing (never use in production)."),
-    long_description = read('README.txt'),
-    license = "GPL-3.0",
-    keywords = "cache python",
+    url = "http://code.google.com/p/dummycache/",
+    description = "A dummy in-memory cache for development and testing. (Not recommended for production use.)",
+    long_description = read("README.txt"),
+    download_url = "http://pypi.python.org/pypi/dummycache",
     classifiers = [
         "Development Status :: 3 - Alpha",
         "Intended Audience :: Developers",
@@ -21,6 +20,8 @@ setup(
         "Topic :: Software Development :: Libraries :: Python Modules",
         "License :: OSI Approved :: GNU General Public License (GPL)"
     ],
+    license = "GPL-3.0",
+    keywords = "cache python",
     packages = ['dummycache'],
     install_requires = [],
 )
